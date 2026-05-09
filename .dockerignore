@@ -1,0 +1,13 @@
+.git
+.github
+.vscode
+__pycache__/
+*.py[cod]
+*.log
+.env
+.venv/
+env/
+venv/
+ENV/
+db.sqlite3
+staticfiles/
