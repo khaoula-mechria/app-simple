@@ -7,6 +7,7 @@ from django.db.utils import OperationalError, ProgrammingError
 class LoginCheckMiddleWare(MiddlewareMixin):
     def process_view(self, request, view_func, view_args, view_kwargs):
         modulename = view_func.__module__
+        metrics_allowed = request.path.startswith("/metrics")
         auth_allowed_paths = {
             reverse("login_page"),
             reverse("user_login"),
@@ -19,7 +20,8 @@ class LoginCheckMiddleWare(MiddlewareMixin):
         except (OperationalError, ProgrammingError):
             # Let auth pages load even when DB tables are not initialized yet.
             if (
-                request.path in auth_allowed_paths
+                metrics_allowed
+                or request.path in auth_allowed_paths
                 or modulename.startswith("django.contrib.auth")
                 or request.path.startswith("/admin/")
             ):
@@ -40,7 +42,8 @@ class LoginCheckMiddleWare(MiddlewareMixin):
                 return redirect(reverse("login_page"))
         else:
             if (
-                request.path in auth_allowed_paths
+                metrics_allowed
+                or request.path in auth_allowed_paths
                 or modulename.startswith("django.contrib.auth")
                 or request.path.startswith("/admin/")
             ):

@@ -40,11 +40,17 @@ SECRET_KEY = os.environ.get(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_bool("DJANGO_DEBUG", env_bool("DEBUG", True))
 
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = list(
+    dict.fromkeys(
+        env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+        + ["backend", "frontend", "prometheus", "grafana"]
+    )
+)
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", "")
 
 
 INSTALLED_APPS = [
+    "django_prometheus",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,6 +61,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -64,6 +71,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "main_app.middleware.LoginCheckMiddleWare",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "college_management_system.urls"
@@ -93,6 +101,17 @@ DATABASES = {
         conn_max_age=600,
     )
 }
+
+PROMETHEUS_DB_BACKENDS = {
+    "django.db.backends.mysql": "django_prometheus.db.backends.mysql",
+    "django.db.backends.postgresql": "django_prometheus.db.backends.postgresql",
+    "django.db.backends.postgresql_psycopg2": "django_prometheus.db.backends.postgresql",
+    "django.db.backends.sqlite3": "django_prometheus.db.backends.sqlite3",
+}
+
+default_db_engine = DATABASES["default"].get("ENGINE")
+if default_db_engine in PROMETHEUS_DB_BACKENDS:
+    DATABASES["default"]["ENGINE"] = PROMETHEUS_DB_BACKENDS[default_db_engine]
 
 
 if not DEBUG:

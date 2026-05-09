@@ -8,6 +8,7 @@ College ERP is a Django application for managing students, staff, courses, atten
 - Frontend: Django templates, Bootstrap, AdminLTE
 - Database: PostgreSQL in Docker, SQLite fallback for local non-Docker usage
 - Web server: Gunicorn + Nginx
+- Monitoring: Prometheus + Grafana + PostgreSQL Exporter
 
 ## Features
 
@@ -77,6 +78,13 @@ docker compose ps
 http://localhost:8081
 ```
 
+Monitoring:
+
+```text
+Prometheus: http://localhost:9090
+Grafana: http://localhost:3000
+```
+
 6. Create the Django admin user:
 
 ```bash
@@ -119,7 +127,7 @@ Restart from a clean static build:
 
 ```bash
 docker compose down
-docker volume rm college-erp_static_volume college-erp_media_volume
+docker volume rm college-erp_static_volume college-erp_media_volume college-erp_prometheus_data college-erp_grafana_data
 docker compose up --build -d
 ```
 
@@ -191,6 +199,10 @@ The project uses `.env.example` as the template. Main variables:
 - `POSTGRES_DB`
 - `POSTGRES_USER`
 - `POSTGRES_PASSWORD`
+- `PROMETHEUS_PORT`
+- `GRAFANA_PORT`
+- `GRAFANA_ADMIN_USER`
+- `GRAFANA_ADMIN_PASSWORD`
 - `STATICFILES_STORAGE`
 - `EMAIL_HOST`
 - `EMAIL_PORT`
@@ -201,6 +213,19 @@ The project uses `.env.example` as the template. Main variables:
 
 - Application: `http://localhost:8081`
 - Admin: `http://localhost:8081/admin/`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+
+Grafana default credentials:
+
+- Username: `admin`
+- Password: `admin`
+
+The default Grafana provisioning includes:
+
+- A ready-to-use Prometheus datasource
+- A `College ERP Overview` dashboard
+- Scrapes for Django application metrics and PostgreSQL exporter metrics
 
 ## Troubleshooting
 
